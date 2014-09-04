@@ -28,316 +28,318 @@ import android.widget.ImageButton;
  */
 public class FloatingActionButton extends ImageButton {
 
-    @IntDef({TYPE_NORMAL, TYPE_MINI})
-    public @interface TYPE{}
-    public static final int TYPE_NORMAL = 0;
-    public static final int TYPE_MINI = 1;
+	//    @IntDef({TYPE_NORMAL, TYPE_MINI})
+	public @interface TYPE {
+	}
 
-    protected AbsListView mListView;
+	public static final int TYPE_NORMAL = 0;
+	public static final int TYPE_MINI = 1;
 
-    private int mScrollY;
-    private boolean mVisible;
+	protected AbsListView mListView;
 
-    private int mColorNormal;
-    private int mColorPressed;
-    private boolean mShadow;
-    private int mType;
+	private int mScrollY;
+	private boolean mVisible;
 
-    private final ScrollSettleHandler mScrollSettleHandler = new ScrollSettleHandler();
-    private final Interpolator mInterpolator = new AccelerateDecelerateInterpolator();
-    private final AbsListView.OnScrollListener mOnScrollListener = new AbsListView.OnScrollListener() {
-        @Override
-        public void onScrollStateChanged(AbsListView view, int scrollState) {
-        }
+	private int mColorNormal;
+	private int mColorPressed;
+	private boolean mShadow;
+	private int mType;
 
-        @Override
-        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-            int newScrollY = getListViewScrollY();
-            if (newScrollY == mScrollY) {
-                return;
-            }
+	private final ScrollSettleHandler mScrollSettleHandler = new ScrollSettleHandler();
+	private final Interpolator mInterpolator = new AccelerateDecelerateInterpolator();
+	private final AbsListView.OnScrollListener mOnScrollListener = new AbsListView.OnScrollListener() {
+		@Override
+		public void onScrollStateChanged(AbsListView view, int scrollState) {
+		}
 
-            if (newScrollY > mScrollY) {
-                // Scrolling up
-                hide();
-            } else if (newScrollY < mScrollY) {
-                // Scrolling down
-                show();
-            }
-            mScrollY = newScrollY;
-        }
-    };
+		@Override
+		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+			int newScrollY = getListViewScrollY();
+			if (newScrollY == mScrollY) {
+				return;
+			}
 
-    public FloatingActionButton(Context context) {
-        this(context, null);
-    }
+			if (newScrollY > mScrollY) {
+				// Scrolling up
+				hide();
+			} else if (newScrollY < mScrollY) {
+				// Scrolling down
+				show();
+			}
+			mScrollY = newScrollY;
+		}
+	};
 
-    public FloatingActionButton(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context, attrs);
-    }
+	public FloatingActionButton(Context context) {
+		this(context, null);
+	}
 
-    public FloatingActionButton(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init(context, attrs);
-    }
+	public FloatingActionButton(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		init(context, attrs);
+	}
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int size = getDimension(
-                mType == TYPE_NORMAL ? R.dimen.fab_size_normal : R.dimen.fab_size_mini);
-        if (mShadow) {
-            int shadowSize = getDimension(R.dimen.fab_shadow_size);
-            size += shadowSize * 2;
-        }
-        setMeasuredDimension(size, size);
-    }
+	public FloatingActionButton(Context context, AttributeSet attrs, int defStyle) {
+		super(context, attrs, defStyle);
+		init(context, attrs);
+	}
 
-    @Override
-    public Parcelable onSaveInstanceState() {
-        Parcelable superState = super.onSaveInstanceState();
-        SavedState savedState = new SavedState(superState);
-        savedState.mScrollY = mScrollY;
+	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+		int size = getDimension(
+				mType == TYPE_NORMAL ? R.dimen.fab_size_normal : R.dimen.fab_size_mini);
+		if (mShadow) {
+			int shadowSize = getDimension(R.dimen.fab_shadow_size);
+			size += shadowSize * 2;
+		}
+		setMeasuredDimension(size, size);
+	}
 
-        return savedState;
-    }
+	@Override
+	public Parcelable onSaveInstanceState() {
+		Parcelable superState = super.onSaveInstanceState();
+		SavedState savedState = new SavedState(superState);
+		savedState.mScrollY = mScrollY;
 
-    @Override
-    public void onRestoreInstanceState(Parcelable state) {
-        if (state instanceof SavedState) {
-            SavedState savedState = (SavedState) state;
-            mScrollY = savedState.mScrollY;
-            super.onRestoreInstanceState(savedState.getSuperState());
-        } else {
-            super.onRestoreInstanceState(state);
-        }
-    }
+		return savedState;
+	}
 
-    private void init(Context context, AttributeSet attributeSet) {
-        mVisible = true;
-        mColorNormal = getColor(android.R.color.holo_blue_dark);
-        mColorPressed = getColor(android.R.color.holo_blue_light);
-        mType = TYPE_NORMAL;
-        mShadow = true;
-        if (attributeSet != null) {
-            initAttributes(context, attributeSet);
-        }
-        updateBackground();
-    }
+	@Override
+	public void onRestoreInstanceState(Parcelable state) {
+		if (state instanceof SavedState) {
+			SavedState savedState = (SavedState) state;
+			mScrollY = savedState.mScrollY;
+			super.onRestoreInstanceState(savedState.getSuperState());
+		} else {
+			super.onRestoreInstanceState(state);
+		}
+	}
 
-    private void initAttributes(Context context, AttributeSet attributeSet) {
-        TypedArray attr = getTypedArray(context, attributeSet, R.styleable.FloatingActionButton);
-        if (attr != null) {
-            try {
-                mColorNormal = attr.getColor(R.styleable.FloatingActionButton_fab_colorNormal,
-                        getColor(android.R.color.holo_blue_dark));
-                mColorPressed = attr.getColor(R.styleable.FloatingActionButton_fab_colorPressed,
-                        getColor(android.R.color.holo_blue_light));
-                mShadow = attr.getBoolean(R.styleable.FloatingActionButton_fab_shadow, true);
-                mType = attr.getInt(R.styleable.FloatingActionButton_fab_type, TYPE_NORMAL);
-            } finally {
-                attr.recycle();
-            }
-        }
-    }
+	private void init(Context context, AttributeSet attributeSet) {
+		mVisible = true;
+		mColorNormal = getColor(android.R.color.holo_blue_dark);
+		mColorPressed = getColor(android.R.color.holo_blue_light);
+		mType = TYPE_NORMAL;
+		mShadow = true;
+		if (attributeSet != null) {
+			initAttributes(context, attributeSet);
+		}
+		updateBackground();
+	}
 
-    private void updateBackground() {
-        StateListDrawable drawable = new StateListDrawable();
-        drawable.addState(new int[]{android.R.attr.state_pressed}, createDrawable(mColorPressed));
-        drawable.addState(new int[]{}, createDrawable(mColorNormal));
-        setBackgroundCompat(drawable);
-    }
+	private void initAttributes(Context context, AttributeSet attributeSet) {
+		TypedArray attr = getTypedArray(context, attributeSet, R.styleable.FloatingActionButton);
+		if (attr != null) {
+			try {
+				mColorNormal = attr.getColor(R.styleable.FloatingActionButton_fab_colorNormal,
+						getColor(android.R.color.holo_blue_dark));
+				mColorPressed = attr.getColor(R.styleable.FloatingActionButton_fab_colorPressed,
+						getColor(android.R.color.holo_blue_light));
+				mShadow = attr.getBoolean(R.styleable.FloatingActionButton_fab_shadow, true);
+				mType = attr.getInt(R.styleable.FloatingActionButton_fab_type, TYPE_NORMAL);
+			} finally {
+				attr.recycle();
+			}
+		}
+	}
 
-    private Drawable createDrawable(int color) {
-        OvalShape ovalShape = new OvalShape();
-        ShapeDrawable shapeDrawable = new ShapeDrawable(ovalShape);
-        shapeDrawable.getPaint().setColor(color);
+	private void updateBackground() {
+		StateListDrawable drawable = new StateListDrawable();
+		drawable.addState(new int[]{android.R.attr.state_pressed}, createDrawable(mColorPressed));
+		drawable.addState(new int[]{}, createDrawable(mColorNormal));
+		setBackgroundCompat(drawable);
+	}
 
-        if (mShadow) {
-            LayerDrawable layerDrawable = new LayerDrawable(
-                    new Drawable[]{getResources().getDrawable(R.drawable.shadow),
-                            shapeDrawable});
-            int shadowSize = getDimension(
-                    mType == TYPE_NORMAL ? R.dimen.fab_shadow_size : R.dimen.fab_mini_shadow_size);
-            layerDrawable.setLayerInset(1, shadowSize, shadowSize, shadowSize, shadowSize);
-            return layerDrawable;
-        } else {
-            return shapeDrawable;
-        }
-    }
+	private Drawable createDrawable(int color) {
+		OvalShape ovalShape = new OvalShape();
+		ShapeDrawable shapeDrawable = new ShapeDrawable(ovalShape);
+		shapeDrawable.getPaint().setColor(color);
 
-    private TypedArray getTypedArray(Context context, AttributeSet attributeSet, int[] attr) {
-        return context.obtainStyledAttributes(attributeSet, attr, 0, 0);
-    }
+		if (mShadow) {
+			LayerDrawable layerDrawable = new LayerDrawable(
+					new Drawable[]{getResources().getDrawable(R.drawable.shadow),
+							shapeDrawable});
+			int shadowSize = getDimension(
+					mType == TYPE_NORMAL ? R.dimen.fab_shadow_size : R.dimen.fab_mini_shadow_size);
+			layerDrawable.setLayerInset(1, shadowSize, shadowSize, shadowSize, shadowSize);
+			return layerDrawable;
+		} else {
+			return shapeDrawable;
+		}
+	}
 
-    private int getColor(@ColorRes int id) {
-        return getResources().getColor(id);
-    }
+	private TypedArray getTypedArray(Context context, AttributeSet attributeSet, int[] attr) {
+		return context.obtainStyledAttributes(attributeSet, attr, 0, 0);
+	}
 
-    private int getDimension(@DimenRes int id) {
-        return getResources().getDimensionPixelSize(id);
-    }
+	private int getColor(int id) {
+		return getResources().getColor(id);
+	}
 
-    @SuppressWarnings("deprecation")
-    @SuppressLint("NewApi")
-    private void setBackgroundCompat(Drawable drawable) {
-        if (Build.VERSION.SDK_INT >= 16) {
-            setBackground(drawable);
-        } else {
-            setBackgroundDrawable(drawable);
-        }
-    }
+	private int getDimension(int id) {
+		return getResources().getDimensionPixelSize(id);
+	}
 
-    protected int getListViewScrollY() {
-        View topChild = mListView.getChildAt(0);
-        return topChild == null ? 0 : mListView.getFirstVisiblePosition() * topChild.getHeight() -
-                topChild.getTop();
-    }
+	@SuppressWarnings("deprecation")
+	@SuppressLint("NewApi")
+	private void setBackgroundCompat(Drawable drawable) {
+		if (Build.VERSION.SDK_INT >= 16) {
+			setBackground(drawable);
+		} else {
+			setBackgroundDrawable(drawable);
+		}
+	}
 
-    private int getMarginBottom() {
-        int marginBottom = 0;
-        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
-        if (layoutParams instanceof ViewGroup.MarginLayoutParams) {
-            marginBottom = ((ViewGroup.MarginLayoutParams) layoutParams).bottomMargin;
-        }
-        return marginBottom;
-    }
+	protected int getListViewScrollY() {
+		View topChild = mListView.getChildAt(0);
+		return topChild == null ? 0 : mListView.getFirstVisiblePosition() * topChild.getHeight() -
+				topChild.getTop();
+	}
 
-    private class ScrollSettleHandler extends Handler {
-        private static final int TRANSLATE_DURATION_MILLIS = 200;
+	private int getMarginBottom() {
+		int marginBottom = 0;
+		final ViewGroup.LayoutParams layoutParams = getLayoutParams();
+		if (layoutParams instanceof ViewGroup.MarginLayoutParams) {
+			marginBottom = ((ViewGroup.MarginLayoutParams) layoutParams).bottomMargin;
+		}
+		return marginBottom;
+	}
 
-        private int mSettledScrollY;
+	private class ScrollSettleHandler extends Handler {
+		private static final int TRANSLATE_DURATION_MILLIS = 200;
 
-        public void onScroll(int scrollY) {
-            if (mSettledScrollY != scrollY) {
-                mSettledScrollY = scrollY;
-                removeMessages(0);
-                sendEmptyMessage(0);
-            }
-        }
+		private int mSettledScrollY;
 
-        @Override
-        public void handleMessage(Message msg) {
-            animate().setInterpolator(mInterpolator)
-                    .setDuration(TRANSLATE_DURATION_MILLIS)
-                    .translationY(mSettledScrollY);
-        }
-    }
+		public void onScroll(int scrollY) {
+			if (mSettledScrollY != scrollY) {
+				mSettledScrollY = scrollY;
+				removeMessages(0);
+				sendEmptyMessage(0);
+			}
+		}
 
-    public void setColorNormal(int color) {
-        if (color != mColorNormal) {
-            mColorNormal = color;
-            updateBackground();
-        }
-    }
+		@Override
+		public void handleMessage(Message msg) {
+			animate().setInterpolator(mInterpolator)
+					.setDuration(TRANSLATE_DURATION_MILLIS)
+					.translationY(mSettledScrollY);
+		}
+	}
 
-    public void setColorNormalResId(@ColorRes int colorResId) {
-        setColorNormal(getColor(colorResId));
-    }
+	public void setColorNormal(int color) {
+		if (color != mColorNormal) {
+			mColorNormal = color;
+			updateBackground();
+		}
+	}
 
-    public int getColorNormal() {
-        return mColorNormal;
-    }
+	public void setColorNormalResId(int colorResId) {
+		setColorNormal(getColor(colorResId));
+	}
 
-    public void setColorPressed(int color) {
-        if (color != mColorPressed) {
-            mColorPressed = color;
-            updateBackground();
-        }
-    }
+	public int getColorNormal() {
+		return mColorNormal;
+	}
 
-    public void setColorPressedResId(@ColorRes int colorResId) {
-        setColorPressed(getColor(colorResId));
-    }
+	public void setColorPressed(int color) {
+		if (color != mColorPressed) {
+			mColorPressed = color;
+			updateBackground();
+		}
+	}
 
-    public int getColorPressed() {
-        return mColorPressed;
-    }
+	public void setColorPressedResId(int colorResId) {
+		setColorPressed(getColor(colorResId));
+	}
 
-    public void setShadow(boolean shadow) {
-        if (shadow != mShadow) {
-            mShadow = shadow;
-            updateBackground();
-        }
-    }
+	public int getColorPressed() {
+		return mColorPressed;
+	}
 
-    public boolean hasShadow() {
-        return mShadow;
-    }
+	public void setShadow(boolean shadow) {
+		if (shadow != mShadow) {
+			mShadow = shadow;
+			updateBackground();
+		}
+	}
 
-    public void setType(@TYPE int type) {
-        if (type != mType) {
-            mType = type;
-            updateBackground();
-        }
-    }
+	public boolean hasShadow() {
+		return mShadow;
+	}
 
-    @TYPE
-    public int getType() {
-        return mType;
-    }
+	public void setType(@TYPE int type) {
+		if (type != mType) {
+			mType = type;
+			updateBackground();
+		}
+	}
 
-    protected AbsListView.OnScrollListener getOnScrollListener() {
-        return mOnScrollListener;
-    }
+	@TYPE
+	public int getType() {
+		return mType;
+	}
 
-    public void show() {
-        if (!mVisible) {
-            mVisible = true;
-            mScrollSettleHandler.onScroll(0);
-        }
-    }
+	protected AbsListView.OnScrollListener getOnScrollListener() {
+		return mOnScrollListener;
+	}
 
-    public void hide() {
-        if (mVisible) {
-            mVisible = false;
-            mScrollSettleHandler.onScroll(getHeight() + getMarginBottom());
-        }
-    }
+	public void show() {
+		if (!mVisible) {
+			mVisible = true;
+			mScrollSettleHandler.onScroll(0);
+		}
+	}
 
-    public void attachToListView(@NonNull AbsListView listView) {
-        if (listView == null) {
-            throw new NullPointerException("AbsListView cannot be null.");
-        }
-        mListView = listView;
-        mListView.setOnScrollListener(mOnScrollListener);
-    }
+	public void hide() {
+		if (mVisible) {
+			mVisible = false;
+			mScrollSettleHandler.onScroll(getHeight() + getMarginBottom());
+		}
+	}
 
-    /**
-     * A {@link android.os.Parcelable} representing the {@link com.melnykov.fab.FloatingActionButton}'s
-     * state.
-     */
-    public static class SavedState extends BaseSavedState {
+	public void attachToListView(@NonNull AbsListView listView) {
+		if (listView == null) {
+			throw new NullPointerException("AbsListView cannot be null.");
+		}
+		mListView = listView;
+		mListView.setOnScrollListener(mOnScrollListener);
+	}
 
-        private int mScrollY;
+	/**
+	 * A {@link android.os.Parcelable} representing the {@link com.melnykov.fab.FloatingActionButton}'s
+	 * state.
+	 */
+	public static class SavedState extends BaseSavedState {
 
-        public SavedState(Parcelable parcel) {
-            super(parcel);
-        }
+		private int mScrollY;
 
-        private SavedState(Parcel in) {
-            super(in);
-            mScrollY = in.readInt();
-        }
+		public SavedState(Parcelable parcel) {
+			super(parcel);
+		}
 
-        @Override
-        public void writeToParcel(Parcel out, int flags) {
-            super.writeToParcel(out, flags);
-            out.writeInt(mScrollY);
-        }
+		private SavedState(Parcel in) {
+			super(in);
+			mScrollY = in.readInt();
+		}
 
-        public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
+		@Override
+		public void writeToParcel(Parcel out, int flags) {
+			super.writeToParcel(out, flags);
+			out.writeInt(mScrollY);
+		}
 
-            @Override
-            public SavedState createFromParcel(Parcel in) {
-                return new SavedState(in);
-            }
+		public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
 
-            @Override
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        };
-    }
+			@Override
+			public SavedState createFromParcel(Parcel in) {
+				return new SavedState(in);
+			}
+
+			@Override
+			public SavedState[] newArray(int size) {
+				return new SavedState[size];
+			}
+		};
+	}
 }
