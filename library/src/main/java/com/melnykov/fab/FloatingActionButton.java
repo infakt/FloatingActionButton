@@ -8,10 +8,11 @@ import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.shapes.OvalShape;
-import android.os.*;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DimenRes;
-import android.support.annotation.IntDef;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.View;
@@ -20,6 +21,10 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.AbsListView;
 import android.widget.ImageButton;
+
+import java.lang.reflect.Field;
+
+import pl.infakt.infakt.util.CombineOnScrollListener;
 
 /**
  * Android Google+ like floating action button which reacts on the attached list view scrolling events.
@@ -303,6 +308,23 @@ public class FloatingActionButton extends ImageButton {
 			throw new NullPointerException("AbsListView cannot be null.");
 		}
 		mListView = listView;
+
+		//HAAAAAACK!!!
+		try {
+			Field declaredField = AbsListView.class.getDeclaredField("mOnScrollListener");
+			declaredField.setAccessible(true);
+			AbsListView.OnScrollListener internalOnScroll = (AbsListView.OnScrollListener) declaredField.get(mListView);
+			if (internalOnScroll != null) {
+				mListView.setOnScrollListener(new CombineOnScrollListener(internalOnScroll, mOnScrollListener));
+				return;
+			}
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+
+
 		mListView.setOnScrollListener(mOnScrollListener);
 	}
 
