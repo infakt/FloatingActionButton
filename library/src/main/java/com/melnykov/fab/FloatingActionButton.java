@@ -50,6 +50,8 @@ public class FloatingActionButton extends ImageButton {
 	private boolean mShadow;
 	private int mType;
 
+	private int additionalBottomMargin;
+
 	private final ScrollSettleHandler mScrollSettleHandler = new ScrollSettleHandler();
 	private final Interpolator mInterpolator = new AccelerateDecelerateInterpolator();
 	private final AbsListView.OnScrollListener mOnScrollListener = new AbsListView.OnScrollListener() {
@@ -292,7 +294,7 @@ public class FloatingActionButton extends ImageButton {
 	public void show() {
 		if (!mVisible) {
 			mVisible = true;
-			mScrollSettleHandler.onScroll(0);
+			mScrollSettleHandler.onScroll(-additionalBottomMargin);
 		}
 	}
 
@@ -363,5 +365,16 @@ public class FloatingActionButton extends ImageButton {
 				return new SavedState[size];
 			}
 		};
+	}
+
+	public void setAdditionalBottomMargin(int additionalBottomMargin) {
+		this.additionalBottomMargin = additionalBottomMargin;
+		if (mVisible) {
+			mVisible = false;
+			show();
+		} else {
+			mVisible = true;
+			hide();
+		}
 	}
 }
