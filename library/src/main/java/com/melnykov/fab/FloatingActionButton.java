@@ -159,8 +159,13 @@ public class FloatingActionButton extends ImageButton {
 	}
 
 	private Drawable createDrawable(int color) {
-		OvalShape ovalShape = new OvalShape();
-		ShapeDrawable shapeDrawable = new ShapeDrawable(ovalShape);
+		ShapeDrawable shapeDrawable;
+		if (isInEditMode()) {
+			shapeDrawable = new ShapeDrawable();
+		} else {
+			OvalShape ovalShape = new OvalShape();
+			shapeDrawable = new ShapeDrawable(ovalShape);
+		}
 		shapeDrawable.getPaint().setColor(color);
 
 		if (mShadow) {
