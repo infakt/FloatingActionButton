@@ -20,7 +20,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-annotations:20.0.0'
+    compile "com.android.support:support-annotations:$project.ANDROID_SUPPORT_VERSION"
 }
 
 apply from: './gradle-mvn-push.gradle'
